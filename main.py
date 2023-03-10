@@ -42,28 +42,32 @@ testDoc = cv2.imread("MidtermJulia.jpg", cv2.IMREAD_COLOR)
 #thres_doc = cv2.adaptiveThreshold(testDoc, 255 ,cv2.ADAPTIVE_THRESH_MEAN_C,  cv2.THRESH_BINARY_INV, 11, 7)
 #blurred = cv2.blur(thres_doc, (5, 5))
 mask = np.ones((3, 3), np.uint8)
+mask5 = np.ones((5, 5), np.uint8)
 blank_doc = cv2.morphologyEx(testDoc, cv2.MORPH_CLOSE, mask, iterations=5)
 blank_doc = cv2.cvtColor(blank_doc, cv2.COLOR_BGR2GRAY)
-blank_doc = cv2.blur(blank_doc, (5,5))
-edge = cv2.Canny(blank_doc, 0, 200)
-edge = cv2.dilate(edge, mask, iterations=3)
+blank_doc = cv2.GaussianBlur(blank_doc, (5,5), 0)
+edge = cv2.Canny(blank_doc, 150, 200)
 
-# contours, hierarchy = cv2.findContours(blank_doc, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-# edges = cv2.Canny(blank_doc, 80, 150)
-# contours_poly = [None]*len(contours)
-# boundRect = [None]*len(contours)
-# for i, c in enumerate(contours):
-#     contours_poly[i] = cv2.approxPolyDP(c, 1, True)
-#     boundRect[i] = cv2.boundingRect(contours_poly[i])  
-# drawing = np.zeros((blank_doc.shape[0], blank_doc.shape[1], 3), dtype=np.uint8) 
-# for i in range(len(contours)):
-#         color = (0,255,0)
-#         #cv2.drawContours(drawing, contours_poly, i, color)
-#         cv2.rectangle(drawing, (int(boundRect[i][0]), int(boundRect[i][1])), \
-#           (int(boundRect[i][0]+boundRect[i][2]), int(boundRect[i][1]+boundRect[i][3])), color, 2)
-plt.imshow(edge, cmap='gray')
-plt.title("Masked doc")
-plt.show()
+
+
+#find and draw edges 
+contours, hierarchy = cv2.findContours(edge, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+cv2.drawContours(testDoc, contours, -1, (0, 255, 0), 3)
+
+#find 4 best corners and circle them on original image
+corners = cv2.goodFeaturesToTrack(image=edge, maxCorners=4, qualityLevel=0.2, minDistance=30)
+corners = np.int0(corners)
+for cor in corners:
+    cv2.circle(testDoc, tuple(cor.flatten()), 25, (0,255,0), 3)
+
+
+
+cv2.imshow("page", testDoc)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+
+
 
 
 
