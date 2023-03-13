@@ -2,6 +2,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
+import os
 from PIL import Image
 from datetime import datetime
 
@@ -74,26 +75,28 @@ def scan(frame):
 
 
 def main():
-    # s = 0
-    # if len(sys.argv) > 1:
-    #     s = sys.argv[1]
-    # source = cv2.VideoCapture(s)
+    webcam = False
+    if webcam:
+        s = 0
+        if len(sys.argv) > 1:
+            s = sys.argv[1]
+        source = cv2.VideoCapture(s)
 
-    # # Show image preview 
-    # win_name = 'Image Preview'
-    # cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
-    # #take a "picture" when the escape key is pressed, the frame is the picture taken
-    # while cv2.waitKey(1) != 27: # Escape
-    #     has_frame, frame = source.read()
-    #     if not has_frame:
-    #         break
-    #     edgeFrame = liveTracking(frame)
-    #     cv2.imshow(win_name, edgeFrame)
-    # #release all resources and close camera preview
-    # source.release()
-    # cv2.destroyWindow(win_name)
-
-    frame = cv2.imread("jubes.png", cv2.IMREAD_COLOR)
+        # Show image preview 
+        win_name = 'Image Preview'
+        cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
+        #take a "picture" when the escape key is pressed, the frame is the picture taken
+        while cv2.waitKey(1) != 27: # Escape
+            has_frame, frame = source.read()
+            if not has_frame:
+                break
+            edgeFrame = liveTracking(frame)
+            cv2.imshow(win_name, edgeFrame)
+        #release all resources and close camera preview
+        source.release()
+        cv2.destroyWindow(win_name)
+    else:
+        frame = cv2.imread("sample.png", cv2.IMREAD_COLOR)
 
     #resize the image if over a certain size
     dim_limit = 1080
@@ -106,13 +109,18 @@ def main():
     #process image taken and show
     processedFrame = scan(frame)
 
+    #create file name
     now = datetime.now()
-    fileName = now.strftime("Scanned%d_%m_%Y_%H_%M.png")
-    print(fileName)
-    cv2.imwrite(fileName, processedFrame)
-    cv2.imshow("Processed Image", processedFrame)
-    cv2.waitKey(0)
-    cv2.destroyWindow("Processed Image")
+    fileName = now.strftime("Scanned%d_%m_%Y_%H_%M")
+    pngPath = fileName + ".png"
+    pdfPath = fileName + ".pdf"
+
+    #save as png, convert to pdf and remove png
+    cv2.imwrite(pngPath, processedFrame)
+    png = Image.open(pngPath)
+    pdf = png.convert('RGB')
+    os.remove(fileName+".png")
+    pdf.save(pdfPath)
 
 if __name__ == "__main__":
     main()
